@@ -1,0 +1,2144 @@
+<!DOCTYPE html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Turniej Krajów</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Oxygen, Ubuntu, Cantarell, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 15px;
+        color: #1a202c;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+      }
+
+      h1 {
+        text-align: center;
+        color: #667eea;
+        margin-bottom: 20px;
+        font-size: 2rem;
+      }
+
+      .btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        margin: 3px;
+      }
+
+      .btn-primary {
+        background: #667eea;
+        color: white;
+      }
+
+      .btn-primary:hover {
+        background: #5568d3;
+        transform: translateY(-2px);
+      }
+
+      .btn-secondary {
+        background: #48bb78;
+        color: white;
+      }
+
+      .btn-secondary:hover {
+        background: #38a169;
+      }
+
+      .btn-danger {
+        background: #f56565;
+        color: white;
+      }
+
+      .btn-danger:hover {
+        background: #e53e3e;
+      }
+
+      .btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .controls {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        margin-bottom: 15px;
+        flex-wrap: wrap;
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      .team-selection {
+        display: none;
+      }
+
+      .team-selection.active {
+        display: block;
+      }
+
+      .selection-header {
+        text-align: center;
+        font-size: 20px;
+        font-weight: bold;
+        color: #667eea;
+        margin-bottom: 15px;
+      }
+
+      .team-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 10px;
+        margin: 15px 0;
+        max-height: 400px;
+        overflow-y: auto;
+      }
+
+      .team-card {
+        padding: 10px;
+        border: 2px solid #e2e8f0;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-align: center;
+      }
+
+      .team-card:hover {
+        border-color: #667eea;
+        transform: translateY(-2px);
+      }
+
+      .team-card.selected {
+        border-color: #667eea;
+        background: #eef2ff;
+      }
+
+      .team-card .flag {
+        font-size: 36px;
+        margin-bottom: 8px;
+      }
+
+      .team-card .name {
+        font-weight: 600;
+        margin-bottom: 3px;
+        font-size: 13px;
+      }
+
+      .team-card .population {
+        color: #718096;
+        font-size: 11px;
+      }
+
+      .match-display {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 15px;
+        color: white;
+        display: none;
+      }
+
+      .match-display.active {
+        display: block;
+      }
+
+      .match-info {
+        text-align: center;
+        margin-bottom: 10px;
+      }
+
+      .match-title {
+        font-size: 20px;
+        font-weight: bold;
+        margin-bottom: 8px;
+      }
+
+      .match-score {
+        font-size: 36px;
+        font-weight: bold;
+        margin: 10px 0;
+      }
+
+      .match-teams {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        margin: 10px 0;
+      }
+
+      .team {
+        text-align: center;
+        flex: 1;
+        padding: 10px;
+      }
+
+      .team .flag {
+        font-size: 40px;
+        margin-bottom: 8px;
+      }
+
+      .team .name {
+        font-size: 16px;
+        font-weight: bold;
+        margin-bottom: 5px;
+      }
+
+      .team .population {
+        font-size: 12px;
+        opacity: 0.9;
+      }
+
+      .vs {
+        font-size: 24px;
+        font-weight: bold;
+        margin: 0 15px;
+      }
+
+      .penalty-game {
+        display: none;
+      }
+
+      .penalty-game.active {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+        z-index: 9999;
+        padding: 20px;
+        overflow-y: auto;
+      }
+
+      .penalty-phase {
+        color: #48bb78;
+        font-size: 48px;
+        text-align: center;
+        margin-bottom: 20px;
+        font-weight: bold;
+        text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.7);
+      }
+
+      .penalty-info {
+        color: white;
+        text-align: center;
+        margin-bottom: 30px;
+        font-size: 28px;
+        font-weight: 600;
+      }
+
+      .penalty-progress {
+        display: flex;
+        justify-content: center;
+        gap: 25px;
+        margin: 30px 0;
+      }
+
+      .progress-dot {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        background: #4a5568;
+        border: 3px solid #718096;
+      }
+
+      .progress-dot.done {
+        background: #48bb78;
+        border-color: #48bb78;
+      }
+
+      .progress-dot.current {
+        background: #ffd700;
+        border-color: #ffd700;
+        animation: pulse 1s infinite;
+      }
+
+      @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.3); }
+      }
+
+      .penalty-choices {
+        display: flex;
+        justify-content: center;
+        gap: 40px;
+        margin: 40px 0;
+      }
+
+      .choice-btn {
+        padding: 80px 70px;
+        background: #667eea;
+        color: white;
+        border: 5px solid white;
+        border-radius: 20px;
+        font-size: 36px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s;
+        min-width: 250px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      }
+
+      .choice-btn:hover {
+        background: #5568d3;
+        transform: scale(1.1);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.7);
+      }
+
+      .choice-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .goal-visualization {
+        background: rgba(45, 55, 72, 0.8);
+        border-radius: 20px;
+        padding: 60px;
+        margin: 40px 0;
+        display: none;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+      }
+
+      .goal-visualization.active {
+        display: block;
+      }
+
+      .goal-sections {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        margin: 30px 0;
+      }
+
+      .goal-section {
+        width: 280px;
+        height: 380px;
+        border: 6px solid white;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      }
+
+      .goal-section.shot {
+        background: rgba(72, 187, 120, 0.4);
+        border-color: #48bb78;
+      }
+
+      .goal-section.keeper {
+        background: rgba(245, 101, 101, 0.4);
+        border-color: #f56565;
+      }
+
+      .goal-section.both {
+        background: rgba(255, 193, 7, 0.5);
+        border-color: #ffd700;
+      }
+
+      .goal-label {
+        color: white;
+        font-size: 40px;
+        font-weight: bold;
+        margin-bottom: 30px;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+      }
+
+      .goal-icon {
+        font-size: 100px;
+        margin: 10px 0;
+        filter: drop-shadow(3px 3px 6px rgba(0, 0, 0, 0.5));
+      }
+
+      .goal-stack {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .penalty-score {
+        color: white;
+        text-align: center;
+        margin: 30px 0 20px 0;
+        font-size: 80px;
+        font-weight: bold;
+        text-shadow: 3px 3px 8px rgba(0, 0, 0, 0.7);
+        letter-spacing: 5px;
+      }
+
+      .penalty-result {
+        color: white;
+        text-align: center;
+        margin: 30px 0;
+        font-size: 44px;
+        font-weight: bold;
+        min-height: 60px;
+        text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.7);
+      }
+
+      .penalty-result.goal {
+        color: #48bb78;
+      }
+
+      .penalty-result.save {
+        color: #f56565;
+      }
+
+      .groups-container {
+        display: none;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 12px;
+        margin-bottom: 15px;
+        max-height: 300px;
+        overflow-y: auto;
+      }
+
+      .groups-container.active {
+        display: grid;
+      }
+
+      .group {
+        background: #f7fafc;
+        border-radius: 8px;
+        padding: 12px;
+        border: 2px solid #e2e8f0;
+      }
+
+      .group-header {
+        font-size: 18px;
+        font-weight: bold;
+        color: #667eea;
+        margin-bottom: 10px;
+        text-align: center;
+      }
+
+      .group-team {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px;
+        margin: 5px 0;
+        background: white;
+        border-radius: 6px;
+        border: 1px solid #e2e8f0;
+        font-size: 12px;
+      }
+
+      .group-team.qualified {
+        background: #c6f6d5;
+        border-color: #48bb78;
+        font-weight: 600;
+      }
+
+      .group-team .flag {
+        font-size: 18px;
+        margin-right: 6px;
+      }
+
+      .group-team .info {
+        display: flex;
+        align-items: center;
+        flex: 1;
+      }
+
+      .group-team .name {
+        font-weight: 600;
+      }
+
+      .group-team .stats {
+        display: flex;
+        gap: 8px;
+        font-size: 11px;
+        color: #718096;
+      }
+
+      .phase-selector {
+        display: none;
+        justify-content: center;
+        gap: 8px;
+        margin-bottom: 15px;
+        flex-wrap: wrap;
+        position: relative;
+      }
+
+      .phase-selector.active {
+        display: flex;
+      }
+
+      .jump-menu {
+        position: absolute;
+        top: 40px;
+        background: white;
+        border: 2px solid #667eea;
+        border-radius: 8px;
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        z-index: 100;
+      }
+
+      .jump-menu.hidden {
+        display: none;
+      }
+
+      .jump-menu .btn {
+        width: 150px;
+      }
+
+      .bracket-container {
+        display: none;
+        overflow-x: auto;
+        background: #f7fafc;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 15px;
+      }
+
+      .bracket-container.active {
+        display: block;
+      }
+
+      .bracket {
+        display: flex;
+        gap: 30px;
+        min-width: max-content;
+      }
+
+      .bracket-round {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        min-width: 200px;
+      }
+
+      .bracket-round-title {
+        font-size: 16px;
+        font-weight: bold;
+        color: #667eea;
+        text-align: center;
+        margin-bottom: 10px;
+        padding: 8px;
+        background: white;
+        border-radius: 6px;
+      }
+
+      .bracket-match {
+        background: white;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 8px;
+        min-height: 80px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+
+      .bracket-team {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 6px;
+        margin: 2px 0;
+        border-radius: 4px;
+        font-size: 13px;
+        transition: all 0.3s;
+      }
+
+      .bracket-team .flag {
+        font-size: 16px;
+        margin-right: 6px;
+      }
+
+      .bracket-team.winner {
+        background: #c6f6d5;
+        font-weight: bold;
+      }
+
+      .bracket-team.loser {
+        opacity: 0.5;
+      }
+
+      .bracket-team .team-info {
+        display: flex;
+        align-items: center;
+      }
+
+      .bracket-team .score {
+        font-weight: bold;
+        color: #667eea;
+      }
+
+      .podium {
+        display: none;
+        padding: 30px 15px;
+      }
+
+      .podium.active {
+        display: block;
+      }
+
+      .podium-title {
+        font-size: 28px;
+        font-weight: bold;
+        text-align: center;
+        color: #667eea;
+        margin-bottom: 30px;
+      }
+
+      .podium-places {
+        display: flex;
+        justify-content: center;
+        align-items: flex-end;
+        gap: 15px;
+        max-width: 800px;
+        margin: 0 auto;
+      }
+
+      .podium-place {
+        text-align: center;
+        padding: 20px 15px;
+        border-radius: 10px;
+        background: white;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        min-width: 150px;
+      }
+
+      .podium-place.first {
+        order: 2;
+        transform: scale(1.1);
+        background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+        padding: 30px 15px;
+      }
+
+      .podium-place.second {
+        order: 1;
+        background: linear-gradient(135deg, #c0c0c0 0%, #e8e8e8 100%);
+      }
+
+      .podium-place.third {
+        order: 3;
+        background: linear-gradient(135deg, #cd7f32 0%, #d4a574 100%);
+      }
+
+      .podium-place .medal {
+        font-size: 48px;
+        margin-bottom: 10px;
+      }
+
+      .podium-place .flag {
+        font-size: 60px;
+        margin-bottom: 10px;
+      }
+
+      .podium-place .name {
+        font-size: 18px;
+        font-weight: bold;
+        margin-bottom: 8px;
+        color: #1a202c;
+      }
+
+      .podium-place .population {
+        font-size: 14px;
+        color: #4a5568;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>⚽ Turniej Krajów ⚽</h1>
+
+      <div id="initialControls" class="controls">
+        <button class="btn btn-primary" onclick="startTeamSelection()">
+          🎮 Rozpocznij Grę
+        </button>
+      </div>
+
+      <div id="teamSelection" class="team-selection">
+        <div class="selection-header">
+          Wybierz swoje drużyny (możesz wybrać wiele)<br>
+          <span style="font-size: 13px; color: #718096; margin-top: 5px; display: block;">
+            ⚠️ Kraje >= 1 mld ludności: max 4 mecze dziennie
+          </span>
+        </div>
+        <div id="teamGrid" class="team-grid"></div>
+        <div class="controls">
+          <button class="btn btn-secondary" onclick="confirmTeamSelection()">
+            Zatwierdź wybór
+          </button>
+          <button class="btn btn-danger" onclick="cancelTeamSelection()">
+            Anuluj
+          </button>
+        </div>
+      </div>
+
+      <div id="phaseSelector" class="phase-selector">
+        <button class="btn btn-primary" onclick="toggleJumpMenu()">
+          ⏩ Przeskocz do...
+        </button>
+        <div id="jumpMenu" class="jump-menu hidden">
+          <button class="btn btn-secondary" onclick="jumpToPhase('round16')">
+            1/8 finału
+          </button>
+          <button class="btn btn-secondary" onclick="jumpToPhase('quarter')">
+            Ćwierćfinał
+          </button>
+          <button class="btn btn-secondary" onclick="jumpToPhase('semi')">
+            Półfinał
+          </button>
+          <button class="btn btn-secondary" onclick="jumpToPhase('final')">
+            Finał
+          </button>
+        </div>
+      </div>
+
+      <div id="bracketContainer" class="bracket-container"></div>
+
+      <div id="groupsContainer" class="groups-container"></div>
+
+      <div id="matchDisplay" class="match-display">
+        <div class="match-info">
+          <div class="match-title" id="matchTitle">Mecz</div>
+          <div class="match-score" id="matchScore">0 : 0</div>
+        </div>
+        <div class="match-teams">
+          <div class="team" id="team1Display">
+            <div class="flag"></div>
+            <div class="name"></div>
+            <div class="population"></div>
+          </div>
+          <div class="vs">VS</div>
+          <div class="team" id="team2Display">
+            <div class="flag"></div>
+            <div class="name"></div>
+            <div class="population"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="penaltyGame" class="penalty-game">
+        <div class="penalty-phase" id="penaltyPhase">Twoja kolej - STRZELAJ!</div>
+        <div class="penalty-info" id="penaltyInfo">
+          Wybierz gdzie chcesz strzelić
+        </div>
+        
+        <div class="penalty-progress" id="penaltyProgress">
+          <div class="progress-dot"></div>
+          <div class="progress-dot"></div>
+          <div class="progress-dot"></div>
+          <div class="progress-dot"></div>
+          <div class="progress-dot"></div>
+        </div>
+
+        <div class="penalty-score" id="penaltyScore">0 - 0</div>
+        
+        <div class="penalty-result" id="penaltyResult"></div>
+        
+        <div class="penalty-choices" id="penaltyChoices">
+          <button class="choice-btn" onclick="makeChoice('left')">
+            ⬅️<br>LEWO
+          </button>
+          <button class="choice-btn" onclick="makeChoice('center')">
+            ⬆️<br>ŚRODEK
+          </button>
+          <button class="choice-btn" onclick="makeChoice('right')">
+            ➡️<br>PRAWO
+          </button>
+        </div>
+
+        <div class="goal-visualization" id="goalVisualization">
+          <div class="goal-sections">
+            <div class="goal-section" id="leftSection">
+              <div class="goal-label">LEWO</div>
+              <div class="goal-stack" id="leftStack"></div>
+            </div>
+            <div class="goal-section" id="centerSection">
+              <div class="goal-label">ŚRODEK</div>
+              <div class="goal-stack" id="centerStack"></div>
+            </div>
+            <div class="goal-section" id="rightSection">
+              <div class="goal-label">PRAWO</div>
+              <div class="goal-stack" id="rightStack"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="gameControls" class="controls hidden">
+        <button
+          class="btn btn-primary"
+          id="playMatchBtn"
+          onclick="playMatch()"
+        >
+          ⚽ Rozegraj mecz
+        </button>
+        <button
+          class="btn btn-primary"
+          id="nextMatchBtn"
+          onclick="nextMatch()"
+          style="display: none"
+        >
+          ➡️ Następny mecz
+        </button>
+        <button
+          class="btn btn-secondary"
+          id="nextPhaseBtn"
+          onclick="nextPhase()"
+          style="display: none"
+        >
+          ⏭️ Następna faza
+        </button>
+        <button
+          class="btn btn-secondary"
+          id="showFinalBtn"
+          onclick="showFinal()"
+          style="display: none"
+        >
+          🏆 Przejdź do finału
+        </button>
+        <button
+          class="btn btn-secondary"
+          id="finishTournamentBtn"
+          onclick="finishTournament()"
+          style="display: none"
+        >
+          🎉 Koniec turnieju
+        </button>
+      </div>
+
+      <div id="podium" class="podium"></div>
+    </div>
+
+    <script>
+      const countries = [
+        { name: "Chiny", flag: "🇨🇳", population: 1425 },
+        { name: "Indie", flag: "🇮🇳", population: 1428 },
+        { name: "USA", flag: "🇺🇸", population: 339 },
+        { name: "Indonezja", flag: "🇮🇩", population: 277 },
+        { name: "Pakistan", flag: "🇵🇰", population: 240 },
+        { name: "Nigeria", flag: "🇳🇬", population: 223 },
+        { name: "Brazylia", flag: "🇧🇷", population: 216 },
+        { name: "Bangladesz", flag: "🇧🇩", population: 173 },
+        { name: "Rosja", flag: "🇷🇺", population: 144 },
+        { name: "Meksyk", flag: "🇲🇽", population: 128 },
+        { name: "Etiopia", flag: "🇪🇹", population: 126 },
+        { name: "Japonia", flag: "🇯🇵", population: 123 },
+        { name: "Filipiny", flag: "🇵🇭", population: 117 },
+        { name: "Egipt", flag: "🇪🇬", population: 112 },
+        { name: "Wietnam", flag: "🇻🇳", population: 98 },
+        { name: "Kongo", flag: "🇨🇩", population: 102 },
+        { name: "Turcja", flag: "🇹🇷", population: 85 },
+        { name: "Iran", flag: "🇮🇷", population: 89 },
+        { name: "Niemcy", flag: "🇩🇪", population: 84 },
+        { name: "Tajlandia", flag: "🇹🇭", population: 71 },
+        { name: "Francja", flag: "🇫🇷", population: 64 },
+        { name: "Wielka Brytania", flag: "🇬🇧", population: 68 },
+        { name: "Tanzania", flag: "🇹🇿", population: 67 },
+        { name: "RPA", flag: "🇿🇦", population: 60 },
+        { name: "Włochy", flag: "🇮🇹", population: 59 },
+        { name: "Kenia", flag: "🇰🇪", population: 55 },
+        { name: "Korea Płd.", flag: "🇰🇷", population: 52 },
+        { name: "Kolumbia", flag: "🇨🇴", population: 52 },
+        { name: "Hiszpania", flag: "🇪🇸", population: 47 },
+        { name: "Argentyna", flag: "🇦🇷", population: 46 },
+        { name: "Polska", flag: "🇵🇱", population: 38 },
+        { name: "Kanada", flag: "🇨🇦", population: 39 },
+      ];
+
+      let gameState = {
+        phase: "selection",
+        playerTeams: [],
+        selectedTeams: [],
+        groups: [],
+        matches: [],
+        matchHistory: [],
+        currentMatchIndex: 0,
+        winners: null,
+        penaltyState: null,
+        thirdPlaceFinished: false,
+        playerIsTeam1: true,
+      };
+
+      let currentMatch = null;
+
+      // System limitu dziennego dla gigantów
+      function getTodayDate() {
+        const today = new Date();
+        return today.toISOString().split('T')[0]; // YYYY-MM-DD
+      }
+
+      function getDailyGiantUsage() {
+        const today = getTodayDate();
+        const stored = localStorage.getItem('giantUsage');
+        
+        if (!stored) {
+          return { date: today, count: 0 };
+        }
+        
+        const data = JSON.parse(stored);
+        
+        // Jeśli nowy dzień - resetuj licznik
+        if (data.date !== today) {
+          return { date: today, count: 0 };
+        }
+        
+        return data;
+      }
+
+      function incrementGiantUsage() {
+        const usage = getDailyGiantUsage();
+        usage.count++;
+        localStorage.setItem('giantUsage', JSON.stringify(usage));
+      }
+
+      function canUseGiant() {
+        const usage = getDailyGiantUsage();
+        return usage.count < 4;
+      }
+
+      function formatPopulation(pop) {
+        if (pop >= 1000) {
+          // Pokaż w miliardach z jednym miejscem po przecinku
+          return (pop / 1000).toFixed(1) + " mld";
+        }
+        return pop + " mln";
+      }
+
+      // Funkcje dźwiękowe - odgłosy kibiców
+      function playGoalSound() {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        
+        // Radosny okrzyk kibiców - dłuższy szum
+        const duration = 2.5;
+        
+        // Główny szum (tłum)
+        const noise = audioContext.createBufferSource();
+        const bufferSize = audioContext.sampleRate * duration;
+        const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
+        const data = buffer.getChannelData(0);
+        
+        for (let i = 0; i < bufferSize; i++) {
+          data[i] = Math.random() * 2 - 1;
+        }
+        noise.buffer = buffer;
+        
+        // Filtr dla bardziej "ludzkiego" brzmienia
+        const filter = audioContext.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.value = 900;
+        filter.Q.value = 2.5;
+        
+        // Gain z PŁYNNYM narastaniem (stopniowo coraz głośniej)
+        const gainNode = audioContext.createGain();
+        gainNode.gain.setValueAtTime(0.01, audioContext.currentTime); // Zaczynamy cicho
+        gainNode.gain.exponentialRampToValueAtTime(0.1, audioContext.currentTime + 0.3); // Powoli rośnie
+        gainNode.gain.exponentialRampToValueAtTime(0.35, audioContext.currentTime + 0.7); // Dalej rośnie
+        gainNode.gain.exponentialRampToValueAtTime(0.5, audioContext.currentTime + 1.0); // Szczyt
+        gainNode.gain.setValueAtTime(0.45, audioContext.currentTime + 1.8); // Utrzymanie
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration); // Opadanie
+        
+        noise.connect(filter);
+        filter.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        noise.start(audioContext.currentTime);
+        noise.stop(audioContext.currentTime + duration);
+      }
+
+      function playSaveSound() {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        
+        // Rozczarowane "Ooohhh" kibiców - dłuższe, TYLKO SZUM
+        const duration = 2.2;
+        
+        // Szum tłumu
+        const noise = audioContext.createBufferSource();
+        const bufferSize = audioContext.sampleRate * duration;
+        const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
+        const data = buffer.getChannelData(0);
+        
+        for (let i = 0; i < bufferSize; i++) {
+          data[i] = Math.random() * 2 - 1;
+        }
+        noise.buffer = buffer;
+        
+        // Filtr dla niższego, smutniejszego tonu
+        const filter = audioContext.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.value = 450;
+        filter.Q.value = 1.5;
+        
+        // Gain z PŁYNNYM narastaniem i długim opadaniem
+        const gainNode = audioContext.createGain();
+        gainNode.gain.setValueAtTime(0.01, audioContext.currentTime); // Zaczynamy cicho
+        gainNode.gain.exponentialRampToValueAtTime(0.15, audioContext.currentTime + 0.4); // Powoli rośnie
+        gainNode.gain.exponentialRampToValueAtTime(0.35, audioContext.currentTime + 0.8); // Szczyt "Ooohhh"
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration); // Długie opadanie
+        
+        noise.connect(filter);
+        filter.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        noise.start(audioContext.currentTime);
+        noise.stop(audioContext.currentTime + duration);
+      }
+
+      function calculateSuccessChance(population, isKeeper) {
+        // Szansa TYLKO gdy wybrano tą samą stronę!
+        // Jeśli inna strona = 100% gol (brak szansy na obronę)
+        const minPop = 38;   // Polska
+        const maxPop = 1428; // Indie
+        
+        // KRAJE-GIGANTY (>= 1 miliard) = 99% szans!
+        if (population >= 1000) {
+          return 0.99; // Dla bramkarzy = 99% obrony, dla strzelających = 99% gola
+        }
+        
+        if (isKeeper) {
+          // Pozostałe kraje: większa populacja = większa szansa na obronę (40%-75%)
+          // Stosowane TYLKO gdy wybierze tą samą stronę co strzelec
+          const normalized = (population - minPop) / (maxPop - minPop);
+          return 0.40 + (normalized * 0.35);
+        } else {
+          // Strzelający: większa populacja = większa szansa na gola (50%-85%)
+          const normalized = (population - minPop) / (maxPop - minPop);
+          return 0.50 + (normalized * 0.35);
+        }
+      }
+
+      function getBotChoice() {
+        const choices = ['left', 'center', 'right'];
+        return choices[Math.floor(Math.random() * 3)];
+      }
+
+      function showVisualization(playerChoice, botChoice, result) {
+        // Resetuj wszystkie sekcje
+        ['left', 'center', 'right'].forEach(side => {
+          const section = document.getElementById(side + 'Section');
+          const stack = document.getElementById(side + 'Stack');
+          section.className = 'goal-section';
+          stack.innerHTML = '';
+        });
+
+        // Pokaż gdzie strzelał i gdzie bronił
+        const playerSection = document.getElementById(playerChoice + 'Section');
+        const botSection = document.getElementById(botChoice + 'Section');
+        const playerStack = document.getElementById(playerChoice + 'Stack');
+        const botStack = document.getElementById(botChoice + 'Stack');
+
+        if (gameState.penaltyState.lastPhase === 'shooting') {
+          // Gracz strzelał
+          if (playerChoice === botChoice) {
+            // Ta sama strona - piłka NAD rękawicą
+            playerSection.classList.add('both');
+            playerStack.innerHTML = '<div class="goal-icon">⚽</div><div class="goal-icon">🧤</div>';
+          } else {
+            playerSection.classList.add('shot');
+            playerStack.innerHTML = '<div class="goal-icon">⚽</div>';
+            botSection.classList.add('keeper');
+            botStack.innerHTML = '<div class="goal-icon">🧤</div>';
+          }
+        } else {
+          // Gracz bronił
+          if (playerChoice === botChoice) {
+            // Ta sama strona - piłka NAD rękawicą
+            playerSection.classList.add('both');
+            playerStack.innerHTML = '<div class="goal-icon">⚽</div><div class="goal-icon">🧤</div>';
+          } else {
+            playerSection.classList.add('keeper');
+            playerStack.innerHTML = '<div class="goal-icon">🧤</div>';
+            botSection.classList.add('shot');
+            botStack.innerHTML = '<div class="goal-icon">⚽</div>';
+          }
+        }
+
+        document.getElementById('goalVisualization').classList.add('active');
+      }
+
+      function startTeamSelection() {
+        document.getElementById("initialControls").classList.add("hidden");
+        document.getElementById("teamSelection").classList.add("active");
+        renderTeamGrid();
+      }
+
+      function renderTeamGrid() {
+        const grid = document.getElementById("teamGrid");
+        grid.innerHTML = "";
+        
+        const usage = getDailyGiantUsage();
+        const remainingGiantUses = 4 - usage.count;
+        
+        countries.forEach((country) => {
+          const card = document.createElement("div");
+          card.className = "team-card";
+          if (gameState.selectedTeams.includes(country)) {
+            card.classList.add("selected");
+          }
+          
+          let extraInfo = '';
+          if (country.population >= 1000) {
+            // Kraj-gigant - pokaż pozostałe użycia
+            extraInfo = '<div style="font-size: 11px; color: ' + (remainingGiantUses > 0 ? '#48bb78' : '#f56565') + '; margin-top: 5px; font-weight: 600;">Pozostało: ' + remainingGiantUses + '/4</div>';
+          }
+          
+          card.innerHTML = '<div class="flag">' + country.flag + '</div><div class="name">' + country.name + '</div><div class="population">' + formatPopulation(country.population) + '</div>' + extraInfo;
+          card.onclick = () => toggleTeamSelection(country, card);
+          grid.appendChild(card);
+        });
+      }
+
+      function toggleTeamSelection(country, card) {
+        const index = gameState.selectedTeams.findIndex(
+          (t) => t.name === country.name
+        );
+        
+        if (index > -1) {
+          // Odznaczanie
+          gameState.selectedTeams.splice(index, 1);
+          card.classList.remove("selected");
+        } else {
+          // Zaznaczanie - bez limitu tutaj, limit dzienny sprawdzany w grze
+          gameState.selectedTeams.push(country);
+          card.classList.add("selected");
+        }
+      }
+
+      function confirmTeamSelection() {
+        if (gameState.selectedTeams.length === 0) {
+          alert("Wybierz przynajmniej jedną drużynę!");
+          return;
+        }
+        gameState.playerTeams = [...gameState.selectedTeams];
+        startTournament();
+      }
+
+      function cancelTeamSelection() {
+        gameState.selectedTeams = [];
+        document.getElementById("teamSelection").classList.remove("active");
+        document.getElementById("initialControls").classList.remove("hidden");
+      }
+
+      function startTournament() {
+        document.getElementById("teamSelection").classList.remove("active");
+        createGroups();
+        gameState.phase = "group";
+        gameState.currentMatchIndex = 0;
+        document.getElementById("phaseSelector").classList.add("active");
+        document.getElementById("gameControls").classList.remove("hidden");
+        renderGroups();
+        renderBracket();
+        simulateUntilPlayerMatch();
+      }
+
+      function createGroups() {
+        const shuffled = [...countries].sort(() => Math.random() - 0.5);
+        const groupCount = 8;
+        const teamsPerGroup = 4;
+        gameState.groups = [];
+        
+        for (let i = 0; i < groupCount; i++) {
+          const groupTeams = shuffled
+            .slice(i * teamsPerGroup, (i + 1) * teamsPerGroup)
+            .map((team) => ({
+              ...team,
+              points: 0,
+              played: 0,
+              won: 0,
+              drawn: 0,
+              lost: 0,
+              goalsFor: 0,
+              goalsAgainst: 0,
+            }));
+          gameState.groups.push({
+            name: String.fromCharCode(65 + i),
+            teams: groupTeams,
+          });
+        }
+        
+        gameState.matches = [];
+        gameState.groups.forEach((group) => {
+          for (let i = 0; i < group.teams.length; i++) {
+            for (let j = i + 1; j < group.teams.length; j++) {
+              const teams = [group.teams[i], group.teams[j]].sort((a, b) => b.population - a.population);
+              gameState.matches.push({
+                phase: "group",
+                groupName: group.name,
+                team1: teams[0],
+                team2: teams[1],
+                played: false,
+              });
+            }
+          }
+        });
+      }
+
+      function renderGroups() {
+        const container = document.getElementById("groupsContainer");
+        container.innerHTML = "";
+        
+        if (gameState.phase === "group") {
+          container.classList.add("active");
+          
+          gameState.groups.forEach((group) => {
+            const sortedTeams = sortGroup(group.teams);
+            const groupDiv = document.createElement("div");
+            groupDiv.className = "group";
+            groupDiv.innerHTML = '<div class="group-header">Grupa ' + group.name + '</div>';
+            
+            sortedTeams.forEach((team, index) => {
+              const teamDiv = document.createElement("div");
+              teamDiv.className = "group-team";
+              
+              // Pierwsze dwa miejsca = awans = zielone tło
+              if (index < 2) {
+                teamDiv.classList.add("qualified");
+              }
+              
+              teamDiv.innerHTML = '<div class="info"><span class="flag">' + team.flag + '</span><span class="name">' + team.name + '</span></div><div class="stats"><span>M: ' + team.played + '</span><span>Pkt: ' + team.points + '</span></div>';
+              groupDiv.appendChild(teamDiv);
+            });
+            container.appendChild(groupDiv);
+          });
+        } else {
+          container.classList.remove("active");
+        }
+      }
+
+      function toggleJumpMenu() {
+        const menu = document.getElementById("jumpMenu");
+        menu.classList.toggle("hidden");
+      }
+
+      // Zamknij menu po kliknięciu poza nim
+      document.addEventListener('click', function(e) {
+        const menu = document.getElementById("jumpMenu");
+        const button = e.target.closest('button');
+        
+        if (menu && !menu.classList.contains('hidden') && 
+            (!button || !button.textContent.includes('Przeskocz'))) {
+          if (!e.target.closest('#jumpMenu')) {
+            menu.classList.add('hidden');
+          }
+        }
+      });
+
+      function renderBracket() {
+        const container = document.getElementById("bracketContainer");
+        container.innerHTML = "";
+        
+        if (gameState.phase === "group") {
+          container.classList.remove("active");
+          return;
+        }
+        
+        container.classList.add("active");
+        const bracket = document.createElement("div");
+        bracket.className = "bracket";
+        
+        // 1/8 finału
+        if (gameState.matches.some(m => m.phase === "round16") || gameState.matchHistory.some(m => m.phase === "round16")) {
+          const round16Matches = [
+            ...gameState.matches.filter(m => m.phase === "round16"),
+            ...gameState.matchHistory.filter(m => m.phase === "round16")
+          ];
+          if (round16Matches.length > 0) {
+            bracket.appendChild(createBracketRound("1/8 finału", round16Matches));
+          }
+        }
+        
+        // Ćwierćfinały
+        if (gameState.matches.some(m => m.phase === "quarter") || gameState.matchHistory.some(m => m.phase === "quarter")) {
+          const quarterMatches = [
+            ...gameState.matches.filter(m => m.phase === "quarter"),
+            ...gameState.matchHistory.filter(m => m.phase === "quarter")
+          ];
+          if (quarterMatches.length > 0) {
+            bracket.appendChild(createBracketRound("Ćwierćfinał", quarterMatches));
+          }
+        }
+        
+        // Półfinały
+        if (gameState.matches.some(m => m.phase === "semi") || gameState.matchHistory.some(m => m.phase === "semi")) {
+          const semiMatches = [
+            ...gameState.matches.filter(m => m.phase === "semi"),
+            ...gameState.matchHistory.filter(m => m.phase === "semi")
+          ];
+          if (semiMatches.length > 0) {
+            bracket.appendChild(createBracketRound("Półfinał", semiMatches));
+          }
+        }
+        
+        // Finały - osobno mecz o 3. miejsce i finał
+        const thirdPlaceMatches = [
+          ...gameState.matches.filter(m => m.phase === "thirdPlace"),
+          ...gameState.matchHistory.filter(m => m.phase === "thirdPlace")
+        ];
+        const finalMatches = [
+          ...gameState.matches.filter(m => m.phase === "final"),
+          ...gameState.matchHistory.filter(m => m.phase === "final")
+        ];
+        
+        if (thirdPlaceMatches.length > 0) {
+          bracket.appendChild(createBracketRound("O 3. miejsce", thirdPlaceMatches));
+        }
+        if (finalMatches.length > 0) {
+          bracket.appendChild(createBracketRound("FINAŁ", finalMatches));
+        }
+        
+        container.appendChild(bracket);
+      }
+
+      function createBracketRound(title, matches) {
+        const roundDiv = document.createElement("div");
+        roundDiv.className = "bracket-round";
+        roundDiv.innerHTML = '<div class="bracket-round-title">' + title + '</div>';
+        
+        matches.forEach(match => {
+          if (match && match.team1 && match.team2) {
+            roundDiv.appendChild(createBracketMatch(match));
+          }
+        });
+        
+        return roundDiv;
+      }
+
+      function createBracketMatch(match) {
+        const matchDiv = document.createElement("div");
+        matchDiv.className = "bracket-match";
+        
+        const team1Class = match.played && match.winner && match.winner.name === match.team1.name ? "winner" : 
+                          match.played && match.winner ? "loser" : "";
+        const team2Class = match.played && match.winner && match.winner.name === match.team2.name ? "winner" : 
+                          match.played && match.winner ? "loser" : "";
+        
+        const team1Score = match.played ? match.team1Goals : "";
+        const team2Score = match.played ? match.team2Goals : "";
+        
+        matchDiv.innerHTML = 
+          '<div class="bracket-team ' + team1Class + '">' +
+            '<div class="team-info">' +
+              '<span class="flag">' + match.team1.flag + '</span>' +
+              '<span>' + match.team1.name + '</span>' +
+            '</div>' +
+            '<span class="score">' + team1Score + '</span>' +
+          '</div>' +
+          '<div class="bracket-team ' + team2Class + '">' +
+            '<div class="team-info">' +
+              '<span class="flag">' + match.team2.flag + '</span>' +
+              '<span>' + match.team2.name + '</span>' +
+            '</div>' +
+            '<span class="score">' + team2Score + '</span>' +
+          '</div>';
+        
+        return matchDiv;
+      }
+
+      function simulateUntilPlayerMatch() {
+        let anyMatchSimulated = false;
+        
+        while (gameState.currentMatchIndex < gameState.matches.length) {
+          const match = gameState.matches[gameState.currentMatchIndex];
+          
+          if (!match || !match.team1 || !match.team2) {
+            gameState.currentMatchIndex++;
+            continue;
+          }
+          
+          const isPlayerMatch = gameState.playerTeams.some(
+            (t) => t.name === match.team1.name || t.name === match.team2.name
+          );
+          
+          if (isPlayerMatch && !match.played) {
+            // Zapamiętaj czy gracz to team1 czy team2
+            const playerIsTeam1 = gameState.playerTeams.some(
+              (t) => t.name === match.team1.name
+            );
+            gameState.playerIsTeam1 = playerIsTeam1;
+            
+            // Odśwież tabele jeśli coś było symulowane
+            if (anyMatchSimulated && gameState.phase === "group") {
+              renderGroups();
+            }
+            
+            showCurrentMatch();
+            return;
+          }
+          
+          if (!match.played) {
+            fastSimulateMatch(match);
+            anyMatchSimulated = true;
+          }
+          
+          gameState.currentMatchIndex++;
+        }
+        
+        // Odśwież tabele po symulacji wszystkich meczów
+        if (gameState.phase === "group") {
+          renderGroups();
+        }
+        
+        if (gameState.phase === "final") {
+          handleFinalPhaseEnd();
+        } else {
+          document.getElementById("nextPhaseBtn").style.display = "inline-block";
+          document.getElementById("playMatchBtn").style.display = "none";
+          document.getElementById("matchDisplay").classList.remove("active");
+        }
+        
+        // Odśwież drabinkę po symulacji
+        renderBracket();
+      }
+
+      function showCurrentMatch() {
+        if (gameState.currentMatchIndex >= gameState.matches.length) {
+          if (gameState.phase === "final") {
+            handleFinalPhaseEnd();
+          } else {
+            document.getElementById("nextPhaseBtn").style.display = "inline-block";
+            document.getElementById("playMatchBtn").style.display = "none";
+            document.getElementById("matchDisplay").classList.remove("active");
+          }
+          return;
+        }
+        
+        currentMatch = gameState.matches[gameState.currentMatchIndex];
+        
+        if (!currentMatch || !currentMatch.team1 || !currentMatch.team2) {
+          gameState.currentMatchIndex++;
+          showCurrentMatch();
+          return;
+        }
+        
+        const display = document.getElementById("matchDisplay");
+        display.classList.add("active");
+        
+        let phaseText = "";
+        if (currentMatch.phase === "group") {
+          phaseText = "Faza grupowa - Grupa " + currentMatch.groupName;
+        } else if (currentMatch.phase === "round16") {
+          phaseText = "1/8 finału";
+        } else if (currentMatch.phase === "quarter") {
+          phaseText = "Ćwierćfinał";
+        } else if (currentMatch.phase === "semi") {
+          phaseText = "Półfinał";
+        } else if (currentMatch.phase === "thirdPlace") {
+          phaseText = "🥉 Walka o 3. miejsce";
+        } else if (currentMatch.phase === "final") {
+          phaseText = "🏆 FINAŁ";
+        }
+        
+        document.getElementById("matchTitle").textContent = phaseText;
+        document.getElementById("matchScore").textContent = "0 : 0";
+        
+        // Wyświetl drużyny - gracz zawsze pierwszy
+        const playerTeam = gameState.playerIsTeam1 ? currentMatch.team1 : currentMatch.team2;
+        const opponentTeam = gameState.playerIsTeam1 ? currentMatch.team2 : currentMatch.team1;
+        
+        const team1 = document.getElementById("team1Display");
+        team1.querySelector(".flag").textContent = playerTeam.flag;
+        team1.querySelector(".name").textContent = playerTeam.name;
+        team1.querySelector(".population").textContent = formatPopulation(
+          playerTeam.population
+        );
+        
+        const team2 = document.getElementById("team2Display");
+        team2.querySelector(".flag").textContent = opponentTeam.flag;
+        team2.querySelector(".name").textContent = opponentTeam.name;
+        team2.querySelector(".population").textContent = formatPopulation(
+          opponentTeam.population
+        );
+        
+        document.getElementById("playMatchBtn").style.display = "inline-block";
+        document.getElementById("nextMatchBtn").style.display = "none";
+        document.getElementById("penaltyGame").classList.remove("active");
+      }
+
+      function playMatch() {
+        if (!currentMatch || !currentMatch.team1 || !currentMatch.team2) {
+          nextMatch();
+          return;
+        }
+        
+        // Sprawdź czy gracz używa giganta (>= 1 mld)
+        const playerTeam = gameState.playerIsTeam1 ? currentMatch.team1 : currentMatch.team2;
+        
+        if (playerTeam.population >= 1000) {
+          // Gracz gra gigantem - sprawdź limit dzienny
+          if (!canUseGiant()) {
+            const usage = getDailyGiantUsage();
+            alert(`Przekroczyłeś dzienny limit! Możesz grać krajami >= 1 miliarda maksymalnie 4 razy dziennie.\n\nDzisiaj użyto: ${usage.count}/4\nWróć jutro lub wybierz inny kraj!`);
+            return;
+          }
+          // Zalicz użycie giganta
+          incrementGiantUsage();
+        }
+        
+        document.getElementById("playMatchBtn").style.display = "none";
+        startPenaltyShootout();
+      }
+
+      function startPenaltyShootout() {
+        gameState.penaltyState = {
+          team1Score: 0,
+          team2Score: 0,
+          currentRound: 1,
+          maxRounds: 5,
+          phase: "shooting",
+          lastPhase: "",
+        };
+        
+        document.getElementById("penaltyGame").classList.add("active");
+        updatePenaltyDisplay();
+        setupPenaltyInterface();
+      }
+
+      function setupPenaltyInterface() {
+        document.getElementById("goalVisualization").classList.remove("active");
+        document.getElementById("penaltyChoices").style.display = "flex";
+        
+        const playerTeam = gameState.playerIsTeam1 ? currentMatch.team1 : currentMatch.team2;
+        
+        if (gameState.penaltyState.phase === "shooting") {
+          document.getElementById("penaltyPhase").textContent = playerTeam.name + " STRZELA! (Ty)";
+          document.getElementById("penaltyInfo").textContent = "Wybierz gdzie chcesz strzelić";
+          document.getElementById("penaltyResult").textContent = "";
+        } else if (gameState.penaltyState.phase === "keeping") {
+          document.getElementById("penaltyPhase").textContent = playerTeam.name + " BRONI! (Ty)";
+          document.getElementById("penaltyInfo").textContent = "Wybierz gdzie chcesz bronić";
+          document.getElementById("penaltyResult").textContent = "";
+        }
+      }
+
+      function makeChoice(playerChoice) {
+        // Ukryj przyciski
+        document.getElementById("penaltyChoices").style.display = "none";
+        
+        const botChoice = getBotChoice();
+        gameState.penaltyState.lastPhase = gameState.penaltyState.phase;
+        
+        if (gameState.penaltyState.phase === "shooting") {
+          handleShot(playerChoice, botChoice);
+        } else {
+          handleKeeping(playerChoice, botChoice);
+        }
+      }
+
+      function handleShot(playerChoice, keeperChoice) {
+        // Gracz strzela, bot broni
+        const playerTeam = gameState.playerIsTeam1 ? currentMatch.team1 : currentMatch.team2;
+        const opponentTeam = gameState.playerIsTeam1 ? currentMatch.team2 : currentMatch.team1;
+        
+        const shooterPopulation = playerTeam.population;
+        const keeperPopulation = opponentTeam.population;
+        
+        const shooterChance = calculateSuccessChance(shooterPopulation, false);
+        const keeperChance = calculateSuccessChance(keeperPopulation, true);
+        
+        let isGoal;
+        
+        if (playerChoice !== keeperChoice) {
+          // Bramkarz wybrał INNĄ stronę - ZAWSZE GOL!
+          isGoal = true;
+        } else {
+          // Bramkarz wybrał TĄ SAMĄ stronę - teraz szansa zależy od populacji
+          // STRZELEC >= 1 mld? -> 99% że i tak strzeli gola!
+          // BRAMKARZ >= 1 mld? -> 99% że obroni!
+          // Kto wygrywa? Losujemy na podstawie ich szans
+          if (shooterPopulation >= 1000 && keeperPopulation >= 1000) {
+            // Obaj giganty - praktycznie 50/50 (99% vs 99%)
+            isGoal = Math.random() < 0.5;
+          } else if (shooterPopulation >= 1000) {
+            // Strzelec gigant - 99% na gola
+            isGoal = Math.random() < shooterChance;
+          } else {
+            // Standardowa logika - bramkarz ma szansę obronić
+            isGoal = Math.random() > keeperChance;
+          }
+        }
+        
+        showVisualization(playerChoice, keeperChoice, isGoal);
+        
+        setTimeout(() => {
+          if (isGoal) {
+            playGoalSound(); // Radosny dźwięk!
+            if (gameState.playerIsTeam1) {
+              gameState.penaltyState.team1Score++;
+            } else {
+              gameState.penaltyState.team2Score++;
+            }
+            document.getElementById("penaltyResult").textContent = "⚽ GOL!";
+            document.getElementById("penaltyResult").className = "penalty-result goal";
+          } else {
+            playSaveSound(); // Smutny dźwięk
+            document.getElementById("penaltyResult").textContent = "❌ OBRONIONY!";
+            document.getElementById("penaltyResult").className = "penalty-result save";
+          }
+          
+          updatePenaltyDisplay();
+          
+          setTimeout(() => {
+            // NIE sprawdzamy końca tutaj - runda się jeszcze nie skończyła!
+            gameState.penaltyState.phase = "keeping";
+            setupPenaltyInterface();
+          }, 2000);
+        }, 500);
+      }
+
+      function handleKeeping(keeperChoice, shooterChoice) {
+        // Gracz broni, bot strzela
+        const playerTeam = gameState.playerIsTeam1 ? currentMatch.team1 : currentMatch.team2;
+        const opponentTeam = gameState.playerIsTeam1 ? currentMatch.team2 : currentMatch.team1;
+        
+        const shooterPopulation = opponentTeam.population;
+        const keeperPopulation = playerTeam.population;
+        
+        const shooterChance = calculateSuccessChance(shooterPopulation, false);
+        const keeperChance = calculateSuccessChance(keeperPopulation, true);
+        
+        let isSave;
+        
+        if (keeperChoice !== shooterChoice) {
+          // Gracz (bramkarz) wybrał INNĄ stronę - ZAWSZE GOL dla przeciwnika!
+          isSave = false;
+        } else {
+          // Gracz wybrał TĄ SAMĄ stronę - teraz szansa zależy od populacji
+          // STRZELEC >= 1 mld? -> 99% że i tak strzeli gola!
+          // BRAMKARZ >= 1 mld? -> 99% że obroni!
+          if (shooterPopulation >= 1000 && keeperPopulation >= 1000) {
+            // Obaj giganty - praktycznie 50/50 (99% vs 99%)
+            isSave = Math.random() < 0.5;
+          } else if (shooterPopulation >= 1000) {
+            // Strzelec gigant - 99% że strzeli (więc tylko 1% obrony)
+            isSave = Math.random() > shooterChance; // 1% szans
+          } else {
+            // Standardowa logika - bramkarz ma szansę obronić
+            isSave = Math.random() < keeperChance;
+          }
+        }
+        
+        showVisualization(keeperChoice, shooterChoice, isSave);
+        
+        setTimeout(() => {
+          if (isSave) {
+            playSaveSound(); // Smutny dźwięk - obrona (brak gola)
+            document.getElementById("penaltyResult").textContent = "🧤 OBRONIŁEŚ!";
+            document.getElementById("penaltyResult").className = "penalty-result goal";
+          } else {
+            playGoalSound(); // Radosny dźwięk - gol przeciwnika!
+            if (gameState.playerIsTeam1) {
+              gameState.penaltyState.team2Score++;
+            } else {
+              gameState.penaltyState.team1Score++;
+            }
+            document.getElementById("penaltyResult").textContent = "⚽ STRACONY GOL!";
+            document.getElementById("penaltyResult").className = "penalty-result save";
+          }
+          
+          updatePenaltyDisplay();
+          
+          setTimeout(() => {
+            // TERAZ zwiększamy rundę - pełna runda się skończyła
+            gameState.penaltyState.currentRound++;
+            
+            // TERAZ sprawdzamy czy koniec (PO zakończeniu pełnej rundy)
+            if (checkPenaltyEnd()) {
+              finishPenaltyShootout();
+            } else {
+              gameState.penaltyState.phase = "shooting";
+              setupPenaltyInterface();
+            }
+          }, 2000);
+        }, 500);
+      }
+
+      function checkPenaltyEnd() {
+        const state = gameState.penaltyState;
+        
+        // Sprawdź czy skończyły się rundy
+        if (state.currentRound > state.maxRounds) {
+          return true;
+        }
+        
+        // Sprawdź matematyczne zakończenie
+        // WAŻNE: currentRound jest już zwiększone PO zakończeniu pełnej rundy
+        // Więc po rundzie 1: currentRound = 2
+        // Pozostałe rundy DO ROZEGRANIA = maxRounds - (currentRound - 1)
+        const completedRounds = state.currentRound - 1; // Ile rund już się odbyło
+        const remainingRounds = state.maxRounds - completedRounds; // Ile rund zostało
+        const scoreDifference = Math.abs(state.team1Score - state.team2Score);
+        
+        // Jeśli różnica > pozostałe rundy = niemożliwe do odrobienia
+        if (remainingRounds > 0 && scoreDifference > remainingRounds) {
+          return true;
+        }
+        
+        return false;
+      }
+
+      function updatePenaltyDisplay() {
+        const state = gameState.penaltyState;
+        
+        // Wyświetl wynik zgodnie z tym, po której stronie jest gracz
+        const playerScore = gameState.playerIsTeam1 ? state.team1Score : state.team2Score;
+        const opponentScore = gameState.playerIsTeam1 ? state.team2Score : state.team1Score;
+        
+        document.getElementById("penaltyScore").textContent = 
+          playerScore + " - " + opponentScore;
+        
+        // Aktualizuj kropki postępu
+        const dots = document.querySelectorAll('.progress-dot');
+        dots.forEach((dot, index) => {
+          dot.className = 'progress-dot';
+          if (index < state.currentRound - 1) {
+            dot.classList.add('done');
+          } else if (index === state.currentRound - 1) {
+            dot.classList.add('current');
+          }
+        });
+      }
+
+      function finishPenaltyShootout() {
+        const state = gameState.penaltyState;
+        const match = currentMatch;
+        
+        if (!match || !match.team1 || !match.team2) {
+          return;
+        }
+        
+        match.played = true;
+        match.team1Goals = state.team1Score;
+        match.team2Goals = state.team2Score;
+        
+        if (state.team1Score > state.team2Score) {
+          match.result = "team1";
+          match.winner = match.team1;
+          // Dodaj populację za wygraną (oprócz fazy grupowej - tam updateGroupStandings to robi)
+          if (match.phase !== "group") {
+            match.team1.population += 3;
+          }
+        } else if (state.team2Score > state.team1Score) {
+          match.result = "team2";
+          match.winner = match.team2;
+          // Dodaj populację za wygraną
+          if (match.phase !== "group") {
+            match.team2.population += 3;
+          }
+        } else {
+          // REMIS!
+          if (match.phase === "group") {
+            // FAZA GRUPOWA: remis jest dozwolony
+            match.result = "draw";
+          } else {
+            // FAZA PUCHAROWA: DOGRYWKA (1 runda)
+            // Jeśli znowu remis → kolejna dogrywka, i tak w kółko aż ktoś wygra
+            state.currentRound = 1;
+            state.maxRounds = 1;
+            state.team1Score = 0;
+            state.team2Score = 0;
+            state.phase = "shooting";
+            updatePenaltyDisplay();
+            setupPenaltyInterface();
+            return; // Nie kończymy - gramy dalej!
+          }
+        }
+        
+        document.getElementById("matchScore").textContent = 
+          (gameState.playerIsTeam1 ? match.team1Goals : match.team2Goals) + " : " + 
+          (gameState.playerIsTeam1 ? match.team2Goals : match.team1Goals);
+        
+        if (match.phase === "group") {
+          updateGroupStandings(match);
+          renderGroups();
+        }
+        
+        document.getElementById("penaltyGame").classList.remove("active");
+        
+        // Sprawdź czy to mecz finałowy
+        if (match.phase === "thirdPlace" || match.phase === "final") {
+          handleFinalPhaseEnd();
+        } else {
+          document.getElementById("nextMatchBtn").style.display = "inline-block";
+        }
+      }
+
+      function updateGroupStandings(match) {
+        if (!match || !match.groupName || !match.team1 || !match.team2) {
+          return;
+        }
+        
+        const group = gameState.groups.find((g) => g.name === match.groupName);
+        if (!group) return;
+        
+        const team1 = group.teams.find((t) => t.name === match.team1.name);
+        const team2 = group.teams.find((t) => t.name === match.team2.name);
+        
+        if (!team1 || !team2) return;
+        
+        team1.played++;
+        team2.played++;
+        team1.goalsFor += match.team1Goals || 0;
+        team1.goalsAgainst += match.team2Goals || 0;
+        team2.goalsFor += match.team2Goals || 0;
+        team2.goalsAgainst += match.team1Goals || 0;
+        
+        if (match.result === "team1") {
+          team1.won++;
+          team2.lost++;
+          team1.points += 3;
+        } else if (match.result === "team2") {
+          team2.won++;
+          team1.lost++;
+          team2.points += 3;
+        } else {
+          team1.drawn++;
+          team2.drawn++;
+          team1.points++;
+          team2.points++;
+        }
+      }
+
+      function sortGroup(teams) {
+        return [...teams].sort((a, b) => {
+          if (b.points !== a.points) return b.points - a.points;
+          const aGD = a.goalsFor - a.goalsAgainst;
+          const bGD = b.goalsFor - b.goalsAgainst;
+          if (bGD !== aGD) return bGD - aGD;
+          if (b.goalsFor !== a.goalsFor) return b.goalsFor - a.goalsFor;
+          return b.population - a.population;
+        });
+      }
+
+      function nextMatch() {
+        gameState.currentMatchIndex++;
+        document.getElementById("nextMatchBtn").style.display = "none";
+        simulateUntilPlayerMatch();
+      }
+
+      function fastSimulateMatch(match) {
+        if (!match || !match.team1 || !match.team2) {
+          return;
+        }
+        
+        const score1 = Math.floor(Math.random() * 6);
+        const score2 = Math.floor(Math.random() * 6);
+        
+        match.played = true;
+        match.team1Goals = score1;
+        match.team2Goals = score2;
+        
+        if (score1 > score2) {
+          match.result = "team1";
+          match.winner = match.team1;
+          // Populacja będzie dodana w updateGroupStandings (faza grupowa)
+          // lub tutaj (faza pucharowa)
+          if (match.phase !== "group") {
+            match.team1.population += 3;
+          }
+        } else if (score2 > score1) {
+          match.result = "team2";
+          match.winner = match.team2;
+          if (match.phase !== "group") {
+            match.team2.population += 3;
+          }
+        } else {
+          // REMIS!
+          if (match.phase === "group") {
+            // FAZA GRUPOWA: remis jest dozwolony
+            match.result = "draw";
+            // Populacja dodana w updateGroupStandings
+          } else {
+            // FAZA PUCHAROWA: nie ma remisów - losuj zwycięzcę
+            // (w symulacji nie robimy dogrywek - po prostu losujemy)
+            match.result = Math.random() < 0.5 ? "team1" : "team2";
+            match.winner = match.result === "team1" ? match.team1 : match.team2;
+            if (match.result === "team1") {
+              match.team1.population += 3;
+            } else {
+              match.team2.population += 3;
+            }
+          }
+        }
+        
+        if (match.phase === "group" && match.groupName) {
+          updateGroupStandings(match);
+        }
+      }
+
+      function finishPhase() {
+        if (gameState.phase === "group") {
+          finishGroupPhase();
+        } else if (gameState.phase === "final") {
+          return;
+        } else {
+          finishKnockoutRound();
+        }
+      }
+
+      function finishGroupPhase() {
+        gameState.groups = gameState.groups.map((group) => ({
+          ...group,
+          teams: sortGroup(group.teams),
+        }));
+        
+        const qualified = [];
+        gameState.groups.forEach((group) => {
+          if (group.teams && group.teams.length >= 2) {
+            qualified.push(group.teams[0], group.teams[1]);
+          }
+        });
+        
+        if (qualified.length < 16) {
+          return;
+        }
+        
+        const createMatch = (t1, t2) => {
+          const teams = [t1, t2].sort((a, b) => {
+            const g1 = gameState.groups.find(g => g.teams.some(t => t.name === a.name));
+            const g2 = gameState.groups.find(g => g.teams.some(t => t.name === b.name));
+            
+            if (g1.name === g2.name) {
+              const sorted = sortGroup(g1.teams);
+              return sorted.indexOf(a) - sorted.indexOf(b);
+            }
+            return b.population - a.population;
+          });
+          return { team1: teams[0], team2: teams[1] };
+        };
+        
+        gameState.matches = [
+          createMatch(qualified[0], qualified[3]),
+          createMatch(qualified[2], qualified[1]),
+          createMatch(qualified[4], qualified[7]),
+          createMatch(qualified[6], qualified[5]),
+          createMatch(qualified[8], qualified[11]),
+          createMatch(qualified[10], qualified[9]),
+          createMatch(qualified[12], qualified[15]),
+          createMatch(qualified[14], qualified[13]),
+        ].map(match => ({
+          phase: "round16",
+          team1: match.team1,
+          team2: match.team2,
+          played: false,
+        }));
+        
+        gameState.matchHistory = [];
+        gameState.currentMatchIndex = 0;
+        gameState.phase = "round16";
+        document.getElementById("nextPhaseBtn").style.display = "none";
+        renderGroups();
+        renderBracket();
+        
+        simulateUntilPlayerMatch();
+      }
+
+      function finishKnockoutRound() {
+        const roundWinners = gameState.matches
+          .filter((m) => m.played && m.winner)
+          .map((m) => m.winner);
+        
+        gameState.matchHistory = [
+          ...gameState.matchHistory,
+          ...gameState.matches.filter((m) => m.played),
+        ];
+        
+        if (gameState.phase === "round16") {
+          gameState.matches = [];
+          for (let i = 0; i < roundWinners.length; i += 2) {
+            if (roundWinners[i] && roundWinners[i + 1]) {
+              const teams = [roundWinners[i], roundWinners[i + 1]].sort((a, b) => b.population - a.population);
+              gameState.matches.push({
+                phase: "quarter",
+                team1: teams[0],
+                team2: teams[1],
+                played: false,
+              });
+            }
+          }
+          gameState.phase = "quarter";
+        } else if (gameState.phase === "quarter") {
+          gameState.matches = [];
+          for (let i = 0; i < roundWinners.length; i += 2) {
+            if (roundWinners[i] && roundWinners[i + 1]) {
+              const teams = [roundWinners[i], roundWinners[i + 1]].sort((a, b) => b.population - a.population);
+              gameState.matches.push({
+                phase: "semi",
+                team1: teams[0],
+                team2: teams[1],
+                played: false,
+              });
+            }
+          }
+          gameState.phase = "semi";
+        } else if (gameState.phase === "semi") {
+          const losers = gameState.matches
+            .filter((m) => m.played && m.result)
+            .map((m) => (m.result === "team1" ? m.team2 : m.team1))
+            .filter(t => t !== undefined);
+          
+          if (roundWinners.length >= 2 && losers.length >= 2) {
+            const finalTeams = [roundWinners[0], roundWinners[1]].sort((a, b) => b.population - a.population);
+            const thirdTeams = [losers[0], losers[1]].sort((a, b) => b.population - a.population);
+            
+            gameState.matches = [
+              {
+                phase: "thirdPlace",
+                team1: thirdTeams[0],
+                team2: thirdTeams[1],
+                played: false,
+              },
+              {
+                phase: "final",
+                team1: finalTeams[0],
+                team2: finalTeams[1],
+                played: false,
+              },
+            ];
+            gameState.phase = "final";
+            gameState.thirdPlaceFinished = false;
+          }
+        }
+        
+        gameState.currentMatchIndex = 0;
+        document.getElementById("nextPhaseBtn").style.display = "none";
+        renderBracket();
+        
+        simulateUntilPlayerMatch();
+      }
+
+      function handleFinalPhaseEnd() {
+        const thirdPlaceMatch = gameState.matches.find((m) => m.phase === "thirdPlace");
+        const finalMatch = gameState.matches.find((m) => m.phase === "final");
+        
+        // Ukryj przycisk "Następny mecz"
+        document.getElementById("nextMatchBtn").style.display = "none";
+        
+        if (thirdPlaceMatch && thirdPlaceMatch.played && !gameState.thirdPlaceFinished) {
+          gameState.thirdPlaceFinished = true;
+          document.getElementById("showFinalBtn").style.display = "inline-block";
+          document.getElementById("playMatchBtn").style.display = "none";
+          document.getElementById("matchDisplay").classList.remove("active");
+        } else if (finalMatch && finalMatch.played) {
+          document.getElementById("finishTournamentBtn").style.display = "inline-block";
+          document.getElementById("playMatchBtn").style.display = "none";
+          document.getElementById("matchDisplay").classList.remove("active");
+        }
+      }
+
+      function showFinal() {
+        document.getElementById("showFinalBtn").style.display = "none";
+        gameState.currentMatchIndex = 1;
+        simulateUntilPlayerMatch();
+      }
+
+      function finishTournament() {
+        const finalMatch = gameState.matches.find((m) => m.phase === "final");
+        const thirdPlaceMatch = gameState.matches.find((m) => m.phase === "thirdPlace");
+        
+        if (!finalMatch || !finalMatch.winner || !thirdPlaceMatch || !thirdPlaceMatch.winner) {
+          return;
+        }
+        
+        gameState.winners = {
+          first: finalMatch.winner,
+          second: finalMatch.result === "team1" ? finalMatch.team2 : finalMatch.team1,
+          third: thirdPlaceMatch.winner,
+        };
+        
+        gameState.phase = "finished";
+        document.getElementById("matchDisplay").classList.remove("active");
+        document.getElementById("gameControls").classList.add("hidden");
+        showPodium();
+      }
+
+      function showPodium() {
+        const podium = document.getElementById("podium");
+        podium.innerHTML = '<div class="podium-title">🏆 Zwycięzcy Turnieju 🏆</div><div class="podium-places"><div class="podium-place second"><div class="medal">🥈</div><div class="flag">' + gameState.winners.second.flag + '</div><div class="name">' + gameState.winners.second.name + '</div><div class="population">' + formatPopulation(gameState.winners.second.population) + '</div></div><div class="podium-place first"><div class="medal">🥇</div><div class="flag">' + gameState.winners.first.flag + '</div><div class="name">' + gameState.winners.first.name + '</div><div class="population">' + formatPopulation(gameState.winners.first.population) + '</div></div><div class="podium-place third"><div class="medal">🥉</div><div class="flag">' + gameState.winners.third.flag + '</div><div class="name">' + gameState.winners.third.name + '</div><div class="population">' + formatPopulation(gameState.winners.third.population) + '</div></div></div><div class="controls" style="margin-top: 25px;"><button class="btn btn-primary" onclick="resetGame()">🔄 Gra od nowa</button></div>';
+        podium.classList.add("active");
+      }
+
+      function nextPhase() {
+        finishPhase();
+      }
+
+      function jumpToPhase(targetPhase) {
+        // Zamknij menu
+        document.getElementById("jumpMenu").classList.add("hidden");
+        
+        if (targetPhase === gameState.phase || targetPhase === "finished") return;
+        
+        while (gameState.phase !== targetPhase && gameState.phase !== "finished") {
+          while (gameState.currentMatchIndex < gameState.matches.length) {
+            if (!gameState.matches[gameState.currentMatchIndex].played) {
+              fastSimulateMatch(gameState.matches[gameState.currentMatchIndex]);
+            }
+            gameState.currentMatchIndex++;
+          }
+          finishPhase();
+        }
+        
+        renderGroups();
+        renderBracket();
+        simulateUntilPlayerMatch();
+      }
+
+      function resetGame() {
+        gameState = {
+          phase: "selection",
+          playerTeams: [],
+          selectedTeams: [],
+          groups: [],
+          matches: [],
+          matchHistory: [],
+          currentMatchIndex: 0,
+          winners: null,
+          penaltyState: null,
+          thirdPlaceFinished: false,
+          playerIsTeam1: true,
+        };
+        
+        document.getElementById("podium").classList.remove("active");
+        document.getElementById("gameControls").classList.add("hidden");
+        document.getElementById("phaseSelector").classList.add("hidden");
+        document.getElementById("jumpMenu").classList.add("hidden");
+        document.getElementById("matchDisplay").classList.remove("active");
+        document.getElementById("groupsContainer").classList.remove("active");
+        document.getElementById("bracketContainer").classList.remove("active");
+        document.getElementById("penaltyGame").classList.remove("active");
+        document.getElementById("showFinalBtn").style.display = "none";
+        document.getElementById("finishTournamentBtn").style.display = "none";
+        document.getElementById("initialControls").classList.remove("hidden");
+      }
+    </script>
+  </body>
+</html>
